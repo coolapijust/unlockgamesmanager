@@ -5,7 +5,22 @@
 
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 
+![Version](https://img.shields.io/badge/Version-1.00%20fixed-brightgreen)
+
 Steam入库文件管理器是一个专为管理Steam解锁游戏设计的工具，支持SteamTools和GreenLuma两种入库方式。它提供了直观的界面来管理、编辑和配置您的入库文件，简化了入库游戏的管理流程。
+
+## 更新日志
+
+### v1.00 fixed (2026-01-15)
+- 🔧 **修复 Fetch Error 问题**
+  - 替换 API 端点：从 `steamui.com` 迁移到 Steam 官方 API
+  - 解决 Cloudflare 防护导致的 403 Forbidden 错误
+  - 添加 SSL 证书验证绕过（verify=False）
+  - 优化游戏名称获取逻辑，提高稳定性
+- 📝 **代码改进**
+  - 更新 HTTP 客户端配置，添加浏览器 User-Agent
+  - 改进错误处理和日志输出
+  - 优化 JSON 数据解析以适配新 API 格式
 功能亮点
 🗂️ 多平台支持
 SteamTools：管理.lua脚本文件

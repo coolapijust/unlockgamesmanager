@@ -24,8 +24,11 @@ class FileManagerBackend:
     def __init__(self):
         self.app_config = {}
         self.steam_path = Path()
-        self.name_cache: Dict[str, str] = {}  # 游戏名称缓存
-        self.client = httpx.AsyncClient(timeout=10) # 复用HTTP客户端
+        self.name_cache: Dict[str, str] = {}
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        self.client = httpx.AsyncClient(timeout=10, headers=headers, follow_redirects=True, verify=False)
         self.load_config()
 
     async def close_client(self):
@@ -78,23 +81,25 @@ class FileManagerBackend:
         if appid in self.name_cache:
             return self.name_cache[appid]
 
-        # 2. 如果缓存中没有，则请求API
-        url = f"https://steamui.com/api/loadGames.php?page=1&search={appid}&sort=update"
+        # 2. 如果缓存中没有，则请求Steam官方API
+        url = f"https://store.steampowered.com/api/appdetails?appids={appid}&l=schinese"
         try:
             response = await self.client.get(url)
             response.raise_for_status()
             data = response.json()
             
             # 3. 解析JSON并找到匹配的游戏
-            games = data.get('games', [])
-            game_data = next((game for game in games if str(game.get('appid')) == appid), None)
-            
-            if game_data:
-                eng_name = game_data.get('name')
-                cn_name = game_data.get('schinese_name')
+            if appid in data and data[appid]['success']:
+                game_data = data[appid]['data']
+                eng_name = game_data.get('name', '')
+                
+                # 尝试获取中文名称
+                cn_name = None
+                if 'name' in game_data:
+                    cn_name = game_data['name']
                 
                 if eng_name and cn_name:
-                    formatted_name = f"{eng_name} | {cn_name}"
+                    formatted_name = f"{eng_name}"
                 elif eng_name:
                     formatted_name = eng_name
                 elif cn_name:
